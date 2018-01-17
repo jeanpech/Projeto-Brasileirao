@@ -1,0 +1,57 @@
+# author: Jean Carlo Moraes
+# Este programa dá a média de pontuação de uma determinada posição durante os anos de 2006 e 2017.
+#Ele serve de apoio para rendimento_time
+
+#input: posi - posição que você quer acompanhar e opcionais perg_grafico, perg_tabela, onde ele te dá opções
+# de ver o gráfico e tabela da médias como output
+
+#output: uma lista onde o elemento i com a pontuação média dos time que ocupara a posição posi na rodada i+1, além disso
+# ele responde com a lista maxi onde o elemento i é a pontuação máxima dos time que ocupara a posição posi na rodada i+1
+#e a lista mini onde o elemento i é a pontuação minima dos time que ocupara a posição posi na rodada i+1
+
+def pont_med(posi,perg_grafico='',perg_tabela=''):
+    
+    anos=list(range(2006,2018))
+    resp=[0]*38
+    mini=[130]*38
+    maxi=[0]*38
+    for ano in anos:
+        a,b=pontuacao(posi,str(ano))
+        for i in list(range(0,38)):
+            resp[i]+=a[i]
+            if maxi[i]<a[i]:
+                maxi[i]=a[i]
+            if mini[i]>a[i]:
+                mini[i]=a[i]               
+    for i in list(range(0,38)):
+        resp[i]=round(float(resp[i]/len(anos)),2)
+    
+    if perg_grafico=='':
+        perg_grafico=input('Quer ver gráfico? y or n answer ')
+    if perg_tabela=='':
+        perg_tabela=input('Quer ver tabela? y or n answer ')
+    
+    b=list(range(1,39))
+    if perg_tabela=='y':
+        import pandas
+        d={'Min':mini,'Max':maxi,'Med':resp}
+        df2=pandas.DataFrame(data=d,index=b, columns=['Min','Med','Max'])
+        print(df2)
+    
+    if perg_grafico=='y':
+        import matplotlib.pyplot as plt
+        import numpy as np
+        plt.clf()
+        plt.figure(figsize=(10, 6))
+        plt.plot(b,resp,label='Média')
+        plt.plot(b,maxi,label='Máximo')
+        plt.plot(b,mini,label='Mínimo')
+        plt.ylim(0,maxi[37])
+        plt.xlim(1,38)
+        plt.xlabel("Rodada")
+        plt.ylabel("Pontuação")
+        plt.legend(loc='lower left', bbox_to_anchor=(1.1,0.5))
+        plt.show()
+      
+    return resp,maxi,mini,b
+    
