@@ -1,0 +1,86 @@
+# author: Jean Carlo Moraes
+# Este programa levanta todas os jogos, na era de pontos corridos, de um determinado confronto.
+
+#input: deve ser entrado como uma listas de dois times, e.g. se você quer buscar o histórico, o primeiro elemento da lista
+# deve ser o time que joga em casa, e.g, Gremio X Flamengo o input deve ser ['gremio_rs','flamengo_rj']
+
+#output: Tabela com todos os confrontos e um texto com as informaações básicas sobre o confronto, dali o jornalista
+# pode observar algo para continuar apurando ou mesmo extrair uma curiosidade para complementar o texto ou servir de manchete
+# Por exemplo, na rodada em que tivermos Gremio x Flamengo, ao rodar o programa o jornalista vai ver que o Flamengo nunca venceu
+# o Grêmio na era dos pontos corridos em Porto Alegre, daí já tem sua manchete: Mengo vai ao Sul tentar primeira vitória contra
+# Grêmio na era dos pontos corridos.
+
+# Este programa pode ser usado dentro de um for com todos os jogos da rodada, tipo
+# Rodada=[['gremio_rs','flamengo_rj'],['inter_rs','cruzeiro_mg'],['saopaulo_sp','palmeiras_sp']]
+# for confronto in Rodada:
+#    hist_jogo(confronto)
+# Podemos pedir para o programa ler a rodada em algum site, observe que com 3 linhas de programação, o jornalista terá
+# nas mãos todos os dados dados históricos dos confrontos das rodadas, pode estudar estes dados e buscar alguma pauta dali.
+
+def hist_jogo(confronto):
+    
+    import csv
+    import pandas
+    arquivo= open('dados_brasileirao2.csv', encoding='ANSI')
+    
+    # inicializando variaveis
+    lista=[]
+    anos=[]
+    resultado_casa=[]
+    resultado_fora=[]
+    rodada_casa=[]
+    rodada_fora=[]
+    jogos=0
+    vitorias_casa=0
+    empates_casa=0
+    derrotas_casa=0
+    vitorias_total=0
+    empates_total=0
+    derrotas_total=0
+       
+    # contando os as vit´rias, empates e derrotas de cada um
+    for registro in csv.DictReader(arquivo):
+        if registro['time_casa']==confronto[0] or registro['time_fora']==confronto[0]:
+            if registro['time_fora']==confronto[1]:
+                ano_conf=registro['ano']
+                resultado_conf=registro['gcasa']+' x '+registro['gfora']
+                anos.append(ano_conf)
+                resultado_casa.append(resultado_conf)
+                jogos+=1
+                rodada=registro['rodada']
+                rodada_casa.append(rodada)
+                if int(registro['gcasa'])>int(registro['gfora']):
+                    vitorias_casa+=1
+                    vitorias_total+=1
+                elif int(registro['gcasa'])<int(registro['gfora']):
+                    derrotas_casa+=1
+                    derrotas_total+=1
+                else:
+                    empates_casa+=1
+                    empates_total+=1
+            elif registro['time_casa']==confronto[1]:
+                resultado_conf=registro['gcasa']+' x '+registro['gfora']
+                resultado_fora.append(resultado_conf)
+                jogos+=1
+                rodada=registro['rodada']
+                rodada_fora.append(rodada)
+                if int(registro['gcasa'])>int(registro['gfora']):
+                    derrotas_total+=1
+                elif int(registro['gcasa'])<int(registro['gfora']):
+                    vitorias_total+=1
+                else:
+                    empates_total+=1
+
+    timecasa=nometime(confronto[0])
+    timefora=nometime(confronto[1])
+    jogoscasa=int(jogos/2)
+    
+    #displaying os resultados
+    
+    d={'Ano':anos,'Resultado em casa':resultado_casa,'Rodada':rodada_casa, 'Resultado fora':resultado_fora, 'Rodada f':rodada_fora}
+    df2=pandas.DataFrame(data=d, columns=['Ano','Resultado em casa','Rodada','Resultado fora','Rodada f'])
+    print(f'\n {timecasa} x {timefora} \n')
+    print(df2)
+
+    print(f'\n O {timecasa} venceu {vitorias_casa} de {jogoscasa} jogos em sua casa, empatou {empates_casa}, enquanto o {timefora} derrotou-o em {derrotas_casa} partidas.\n ')                
+    print(f' No total, o {timecasa} venceu {vitorias_total}, empatou {empates_total} e o {timefora} venceu {derrotas_total}. \n')                
