@@ -1,0 +1,201 @@
+#Autor: Jean Carlo Moraes
+# Esse programa monta a tabela do campeonato brasileiro de qualquer campeonato entre 2003 e 2017, com o detalhe de você 
+#pode montar tabela parciais, por exemplo a tabela da primeira rodada até a nona de 2009, ou mesmo da décima sétima até a
+# vigésima nona de algum ano. Tabelas parciais exigem trabalho se forem montadas a mão ou mesmo em excel, com este programa
+# conseguimos a tabela em segundos. Serve para fazer apuração de dados de campeonatos passados.
+
+#inputs: 
+# ano_camp: ano do campeonato,
+# roda_ini: rodada que você quer que comece o computo da tabela, se nada especificado, o programa assume 1
+# roda_fim: rodada que você quer que termine o computo da tabela, se nada especificado, o programa assume 38, 42 ou 46
+# dependendo do ano.
+
+#output
+# tabela do campeonato
+
+def classificacao(ano_camp,roda_ini='',roda_fim=''):
+    import csv
+    #uploading os dados dos jogos
+    arquivo= open('dados_brasileirao2.csv', encoding='ANSI')
+    
+    #Determinando o número de rodadas do campeonato
+    ano_camp=str(ano_camp)
+    if ano_camp=='2003' or ano_camp=='2004':
+        n_roda=46
+    elif ano_camp=='2005':
+        n_roda=42
+    else:
+        n_roda=38
+    
+    #Determinando o número de times que jogou no pedido
+    n_times=int(n_roda/2+1)
+    n_jogos_roda=int(n_times/2)
+    
+    #Especificando valores de roda_ini e roda_fim, caso não tenham sido valores de input
+    if roda_ini=='':
+        roda_ini=1
+    if roda_fim=='':
+        roda_fim=n_roda
+    
+    #inicilizando variaveis
+    contador=0
+    times=dict()
+    pont=dict()
+    jogos=dict()
+    vit=dict()
+    der=dict()
+    emp=dict()
+    gols_feitos=dict()
+    gols_sofridos=dict()
+    saldo=dict()
+    
+    ###########################################################################################
+    #  Contando número de vitória, empates, derrotas, empates de cada time através dos dados  #
+    ###########################################################################################
+    for registro in csv.DictReader(arquivo):
+        #extraindo os times que jogaram o campeonato naquele ano
+        if registro['ano']==ano_camp and contador<n_times:
+            times[registro['time_casa']]=nometime(registro['time_casa'])
+            times[registro['time_fora']]=nometime(registro['time_fora'])
+                        
+            #alocando os times num dicionário para cada item da tabela, inicializando a tabela com zeros
+            pont[registro['time_casa']]=0
+            pont[registro['time_fora']]=0
+            jogos[registro['time_casa']]=0
+            jogos[registro['time_fora']]=0
+            vit[registro['time_casa']]=0
+            vit[registro['time_fora']]=0
+            der[registro['time_casa']]=0
+            der[registro['time_fora']]=0
+            emp[registro['time_casa']]=0
+            emp[registro['time_fora']]=0
+            gols_feitos[registro['time_casa']]=0
+            gols_feitos[registro['time_fora']]=0
+            gols_sofridos[registro['time_casa']]=0
+            gols_sofridos[registro['time_fora']]=0
+            saldo[registro['time_casa']]=0
+            saldo[registro['time_fora']]=0
+            
+            contador+=2
+            
+        # Montando a tabela    
+        if registro['ano']==ano_camp and roda_ini<=int(registro['rodada']) and roda_fim>=int(registro['rodada']):
+            golcasa=registro['gcasa']
+            golfora=registro['gfora']
+            #Considerando os casos de wo, lembre que wo=without opponent, portanto ganha-se por wo, não perde-se por wo
+            # quero dizer que se marcarmos wo no gols feitos do time da casa e não no de fora, então time da casa ganhou.
+            if golcasa=='wo' or golfora=='wo':
+                if golfora!='wo':
+                    gols_sofridos[registro['time_fora']]+=3
+                    der[registro['time_fora']]+=1
+                    vit[registro['time_casa']]+=1
+                    gols_feitos[registro['time_casa']]+=3
+                elif golcasa!='wo':
+                    gols_sofridos[registro['time_casa']]+=3
+                    der[registro['time_casa']]+=1
+                    vit[registro['time_fora']]+=1
+                    gols_feitos[registro['time_fora']]+=3
+                else:
+                    gols_sofridos[registro['time_casa']]+=3
+                    der[registro['time_casa']]+=1
+                    gols_sofridos[registro['time_fora']]+=3
+                    der[registro['time_fora']]+=1
+            else:                
+                golcasa=int(golcasa)
+                golfora=int(golfora)
+                gols_feitos[registro['time_casa']]+=golcasa
+                gols_feitos[registro['time_fora']]+=golfora
+                gols_sofridos[registro['time_casa']]+=golfora
+                gols_sofridos[registro['time_fora']]+=golcasa
+                if golcasa>golfora:
+                    vit[registro['time_casa']]+=1
+                    der[registro['time_fora']]+=1
+                elif golcasa==golfora:
+                    emp[registro['time_casa']]+=1
+                    emp[registro['time_fora']]+=1
+                else:
+                    vit[registro['time_fora']]+=1
+                    der[registro['time_casa']]+=1
+        
+        for team in pont:
+            pont[team]=3*vit[team]+emp[team]
+            jogos[team]=vit[team]+emp[team]+der[team]
+            saldo[team]=gols_feitos[team]-gols_sofridos[team]
+   ##############################################################################################################
+   # Neste momento precisamos ajustar os jogos que tiverm resulatado modificado pela justiça desportiva
+   #############################################################################################################
+    if ano_camp=='2013':
+        if int(roda_fim)==38:
+            pont['flamengo_rj']+=-4
+            pont['portuguesa_sp']+=-4
+           
+
+    if ano_camp=='2010':
+        if int(roda_fim)==38:
+            pont['gremioprudente_sp']+=-3
+    
+    if ano_camp=='2004':
+        if int(roda_fim)>43:
+            pont['saocaetano_sp']+=-24
+   
+    if ano_camp=='2003':
+        pont['inter_rs']+=2
+        pont['pontepreta_sp']+=-1
+        if int(roda_fim)>1:
+            pont['juventude_rs']+=3
+            pont['pontepreta_sp']+=-3
+        if int(roda_fim)>25:
+            pont['paysandu_pa']+=-1
+            pont['corinthians_sp']+=2    
+        if int(roda_fim)>27:
+            pont['paysandu_pa']+=-3
+            pont['pontepreta_sp']+=3  
+        if int(roda_fim)>29:
+            pont['paysandu_pa']+=-3
+            pont['saocaetano_sp']+=3
+        if int(roda_fim)>30:
+            pont['paysandu_pa']+=-1
+            pont['fluminense_rj']+=2
+    
+    #Ordenando a tabela
+    import pandas
+    index_list=[]
+    pontuacao_list=[]
+    jogos_list=[]
+    vit_list=[]
+    der_list=[]
+    emp_list=[]
+    gf_list=[]
+    gs_list=[]
+    sg_list=[]
+
+    for team in times:
+        index=times[team]
+        index_list.append(index)
+        pontuacao=pont[team]
+        pontuacao_list.append(pontuacao)
+        n_jogos=jogos[team]
+        jogos_list.append(n_jogos)
+        n_vit=vit[team]
+        vit_list.append(n_vit)
+        n_emp=emp[team]
+        emp_list.append(n_emp)
+        n_der=der[team]
+        der_list.append(n_der)
+        n_gf=gols_feitos[team]
+        gf_list.append(n_gf)
+        n_gs=gols_sofridos[team]
+        gs_list.append(n_gs)
+        n_sg=saldo[team]
+        sg_list.append(n_sg)
+     
+    ###########################################################################################################
+    # Apresentando a tabela
+    ##########################################################################################################
+    d={'Times':index_list,'P':pontuacao_list,'J':jogos_list,'V':vit_list,'E':emp_list,'D':der_list,'GF':gf_list,'GS':gs_list,'SG':sg_list}
+    df2=pandas.DataFrame(data=d, index=list(range(1,n_times+1)), columns=['Times','P','J','V','E','D','GF','GS','SG'])
+   
+    df2.sort_values(['P','V','SG','GF'], ascending=[False, False, False, False], inplace=True)
+    df2.index = range(1,n_times+1)
+    #print(df2)
+    return df2
