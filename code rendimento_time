@@ -1,0 +1,180 @@
+# author: Jean Carlo Moraes
+# Este programa mostra a evolução de um time durante um campeonato usando as informações de médias de posições calculadas
+#anteriormente, com a curva das médias da primeira, quarta e décima sexta posição, o programa calcula a zon em torno destas
+# onde pode estar localizados times nesta posição no campeonato atual. Dividindo o plano Aproveitamento x rodadas em regiões,
+# você pode verificar exatamente quais as reais condições do time no campeonato (naquele momento), olhando em qual
+# faixa ele cai.
+
+#input: ano_camp ano do campeonato, se nada dito, ele entenderá que o ano é 2018 e perguntará qual rodada do campeonatos
+#estamos. O programa pede como input também, uma lista de times que será plotado o rendimento.
+
+#output: Gráfico com as zona de rabaixamento, zona de campeão, zona de disputaro título, disputar z4, disputar G4 e a curva 
+# dos times que escolhermos.
+#Obs. Há um bug ao usar o atletico_pr em 2016 e alguns times em 2007, não encontri o problema em tempo de postar, mas
+# continuarei procurando. Para ver o outpu vc pode usar por exemplo: rendimento_time(2016), 2, gremio_rs, plameiras_sp
+def rendimento_time(ano_camp=''):
+    
+    if ano_camp=='':
+        ano_camp='2018'
+        rodada=input('Qual rodada?')
+        rodada=int(rodada)
+    else:
+        rodada=38
+    
+    ano_camp=str(ano_camp)
+    
+    ntimes=input('Entre com o número times: ')
+    contador=0
+    times=[]
+    cor={}
+    
+    while contador<int(ntimes):
+        time=input('Digite time. Use o formarto time_sigla.do.estado: ')
+        time.strip()
+        team=nometime(time)
+        cor[team]=cortime(time)
+        times.append(team)
+        contador+=1
+    
+    import csv
+    arquivo= open('dados_brasileirao2.csv', encoding='ANSI')
+ 
+    aprov={}
+    for team in times:
+        aprov[team]=[]
+        
+    for i in list(range(1,rodada+1)):
+        A=classificacao(ano_camp,1,i)
+        for j in list(range(0,19)):
+            for team in times:
+                if A.iloc[j][0]==team:
+                    pont=A.iloc[j][1]
+                    ap=round(pont/(3*i)*100,2)
+                    aprov[team].append(ap)
+                    
+    import csv
+    arquivo= open('banco_pontu_media.csv', encoding='utf-8')
+    
+    # Juntando os dados para fazer a curva de aproveitamento médio do primeiro, quarto e décimo sexto colocado
+    mini1=[]
+    med1=[]
+    maxi1=[]
+    mini4=[]
+    med4=[]
+    maxi4=[]
+    mini16=[]
+    med16=[]
+    maxi16=[]
+
+    for registro in csv.reader(arquivo):
+        aux=0
+        if registro[0]=='1':
+            if registro[1]=='min':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    mini1.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='med':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    med1.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='max':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    maxi1.append(round(float(100*aux/(3*i-3)),2))
+        if registro[0]=='4':
+            if registro[1]=='min':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    mini4.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='med':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    med4.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='max':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    maxi4.append(round(float(100*aux/(3*i-3)),2))
+        if registro[0]=='16':
+            if registro[1]=='min':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    mini16.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='med':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    med16.append(round(float(100*aux/(3*i-3)),2))
+            elif registro[1]=='max':
+                for i in list(range(2,40)):
+                    aux=float(registro[i])
+                    maxi16.append(round(float(100*aux/(3*i-3)),2))
+
+    #####Desenhando a região
+    difplus1=[]
+    difminus1=[]
+    difplus4=[]
+    difminus4=[]
+    difplus16=[]
+    difminus16=[]
+
+    for i in list(range(0,38)):
+        difminus1.append(round(med1[i]-mini1[i],2))
+        difplus1.append(round(maxi1[i]-med1[i],2))
+        difminus4.append(med4[i]-mini4[i])
+        difplus4.append(maxi4[i]-med4[i])
+        difminus16.append(med16[i]-mini16[i])
+        difplus16.append(maxi16[i]-med16[i])
+
+    m1_minus=round(sum(difminus1)/len(difminus1),2)
+    med1_liminf=[round(x-m1_minus,2) for x in med1]
+    m1_plus=round(sum(difplus1)/len(difplus1),2)
+    med1_limsup=[round(min(x+m1_plus,100),2) for x in med1]
+
+    m4_minus=round(sum(difminus4)/len(difminus4),2)
+    med4_liminf=[round(x-m4_minus,2) for x in med4]
+    m4_plus=round(sum(difplus4)/len(difplus4),2)
+    med4_limsup=[round(min(x+m4_plus,100),2) for x in med4]
+
+    m16_minus=round(sum(difminus16)/len(difminus16),2)
+    med16_liminf=[round(max(x-m16_minus,0),2) for x in med16]
+    m16_plus=round(sum(difplus16)/len(difplus16),2)
+    med16_limsup=[round(min(x+m16_plus,100),2) for x in med16]
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+    b=list(range(1,39))
+    xeixo=[0]*38
+    vert100=[102]*38
+
+    plt.clf()
+    plt.figure(figsize=(12, 8))
+    plt.plot(b,med16_liminf,color='sandybrown')
+    plt.plot(b,med16,color='sienna',label='Média do 16')
+    plt.plot(b,med16_limsup,color='sandybrown')
+    plt.fill_between(b,med16_liminf,med16_limsup,color='sandybrown', label='Zona de Perigo')
+    #plt.plot(b,med1_liminf)
+    plt.plot(b,med1,label='Média do 1')
+    plt.plot(b,med1_limsup,'powderblue')
+    plt.plot(b,med4_liminf,color='mediumaquamarine')
+    plt.plot(b,med4,color='g',label='Média do 4')
+    plt.plot(b,med4_limsup,color='mediumaquamarine')
+    plt.fill_between(b,med4_liminf,med4,color='mediumaquamarine')
+    plt.fill_between(b,med4,med4_limsup,color='mediumaquamarine',label='Disputando G4')
+    plt.fill_between(b,med4_limsup,med1,color='powderblue')
+    plt.fill_between(b,med1,med1_limsup,color='powderblue',label='Disputando Título')
+    plt.fill_between(b,vert100,med1_limsup,color='lightskyblue',label='Zona Campeão')
+    plt.fill_between(b,med16_liminf,xeixo,color='lightcoral',label='Zona de Rebaixamento')
+    plt.fill_between(b,med4_liminf,med16_limsup,color='khaki',label='Zona Sula')
+    #plt.fill_between(b,med16_liminf,med16_limsup,color='c')
+    #plt.legend(loc='lower left', bbox_to_anchor=(1.1,0.5))
+    plt.xticks(np.arange(1, 39, 1.0))
+    plt.yticks(np.arange(0, 101, 5.0))
+    plt.ylim(0,102)
+    plt.xlim(1,38)
+    plt.xlabel("Rodada")
+    plt.ylabel("Aproveitamento")
+    
+    #Desenhando o gráfico de aproveitamento dos times:
+    for team in times:
+        plt.plot(b,aprov[team],'ko-',color=cor[team], label=team)
+        plt.legend(loc='lower left', bbox_to_anchor=(1.1,0.5))
+    plt.show()
