@@ -1,0 +1,39 @@
+# author: Jean Carlo Moraes
+# Este é um programa de apoio para as outras rotinas, ele determina uma cor para ser usada pelos times nos gráficos
+# dessas equipes. Ou seja, não deixamos a escolha da cor do gráfico de rendimento do time para o python escolher, pois seria
+# estranho apresentar o gráfico do Grêmio com a cor vermelha, ou o do Atlético-MG de azul. Por enquanto, só tem cores para 12
+# times, mas aos poucos podemos adicionar mais times, a medida, que necessitamos.
+
+#input (STRING): um time no formato: time_sigladoestado, e.g., gremio_rs, saopaulo_sp
+#output (STRING): String com o nome de uma cor
+
+def cortime(time):
+        time1=time.strip()
+        if time1=='gremio_rs':
+            cor_team='midnightblue'
+        elif time1=='cruzeiro_mg':
+            cor_team='darkblue'
+        elif time1=='inter_rs':
+            cor_team='red'
+        elif time1=='santos_sp':
+            cor_team='w'
+        elif time1=='fluminense_rj':
+            cor_team='firebrick'
+        elif time1=='atletico_mg':
+            cor_team='gray'
+        elif time1=='botafogo_rj':
+            cor_team='b'
+        elif time1=='corinthians_sp':
+            cor_team='grey'
+        elif time1=='flamengo_rj':
+            cor_team='crimson'
+        elif time1=='vasco_rj':
+            cor_team='darkgrey'
+        elif time1=='palmeiras_sp':
+            cor_team='darkgreen'
+        elif time1=='saopaulo_sp':
+            cor_team='darkred'
+        else:
+            cor_team='dimgrey'
+        
+        return cor_team
