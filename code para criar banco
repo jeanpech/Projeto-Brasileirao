@@ -1,0 +1,83 @@
+# author: Jean Carlo Moraes
+# O objetivo deste código é gerar dois bancos de dados, o primeiro terá o minimo, o maximo e a média (considerando de 2006 2017)
+# das pontuções por posição por rodada banco_pontu_media, o outro terá a pontuação por rodada por ano. O código pont_med é lento
+# por isso, o inves de usá-lo várias vezes, resolvi criar um banco com todas os dados que ele gera e quando precisar desses dados
+# acesso o banco de dados, ao invés de usar pont_med
+
+indices=list(range(1,21))
+rodadas=list(range(1,39))
+head=[]
+head.append('Rodada')
+head.append('MinMedMax')
+for i in rodadas:
+    head.append(str(rodadas[i-1]))
+    
+
+posicoes=list(range(1,21))
+lista_mini=[]
+lista_med=[]
+lista_maxi=[]
+for posi in posicoes:
+    aux_mini=[]
+    aux_med=[]
+    aux_maxi=[]
+    aux_mini.append(str(posicoes[posi-1]))
+    aux_mini.append('min')
+    aux_med.append(str(posicoes[posi-1]))
+    aux_med.append('med')
+    aux_maxi.append(str(posicoes[posi-1]))
+    aux_maxi.append('max')
+    resp,maxi,mini,b=pont_med(posi,'n','n')
+    for j in rodadas:
+        aux_mini.append(str(mini[j-1]))
+        aux_med.append(str(resp[j-1]))
+        aux_maxi.append(str(maxi[j-1]))
+    lista_mini.append(aux_mini)
+    lista_med.append(aux_med)
+    lista_maxi.append(aux_maxi)
+    
+import csv
+
+posicoes=list(range(1,21))
+
+banco_med=open('banco_pontu_media.csv',mode='w',encoding='utf-8')
+banco_pos=open('banco_pontu_posicao.csv',mode='w',encoding='utf-8')
+escritor_med=csv.writer(banco_med,lineterminator='\n')
+escritor_pos=csv.writer(banco_pos,lineterminator='\n')
+
+rodadas=list(range(1,39))
+head1=[]
+head2=[]
+head1.append('Posição')
+head1.append('MinMedMax')
+head1.append('Ano')
+head1.append('Posição')
+for i in rodadas:
+    head1.append(str(rodadas[i-1]))
+    head2.append(str(rodadas[i-1]))
+
+escritor_med.writerow(head1)
+escritor_pos.writerow(head2)
+
+for i in list(range(0,20)):
+    escritor_med.writerow(lista_mini[i])
+    escritor_med.writerow(lista_med[i])
+    escritor_med.writerow(lista_maxi[i])
+
+lista_ano=[]
+anos=list(range(2006,2018))
+tam=len(anos)
+for j in list(range(0,tam)):
+    ano_camp=str(anos[j])
+    for posi in posicoes:
+        aux=[]
+        aux.append(ano_camp)
+        aux.append(str(posi))
+        a,b=pontuacao(posi,ano_camp)
+        for i in list(range(0,38)):
+            aux.append(a[i])
+        escritor_pos.writerow(aux)    
+        
+
+banco_pos.close()       
+banco_med.close()
