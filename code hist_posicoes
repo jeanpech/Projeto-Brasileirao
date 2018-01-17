@@ -1,0 +1,126 @@
+# author: Jean Carlo Moraes
+# Este programa dá o histórico de posições de um time num determinado ano.
+
+#input: time no formato time_estado e o ano do campeonato.
+#output: uma tabela com a evolução do time no campeonato, um gráfico Posição do time x Rodada e o histograma de posições. Além
+# disso, o programa fornece um texto com a melhor e a pior posição (em que rodadas aconteceram).
+# hist_posicoes('gremio_rs','2017')
+
+def hist_posicoes(time,ano_camp):
+    
+    import csv
+    import pandas
+    arquivo= open('dados_brasileirao2.csv', encoding='ANSI')
+    
+    ano_camp=str(ano_camp)
+    if ano_camp=='2003' or ano_camp=='2004':
+        n_roda=46
+    elif ano_camp=='2005':
+        n_roda=42
+    else:
+        n_roda=38
+    
+    ntimes=int(n_roda/2)+1;
+    team=nometime(time)
+    lista=[]
+    maxi=0
+    roda_max=1
+    mini=100
+    roda_min=1
+    melhor_posi=25
+    roda_meposi=0
+    pior_posi=1
+    roda_piposi=1
+    cont_pior=0
+    cont_melhor=0
+    cont_g4=0
+    cont_z4=0
+    positions=[]
+        
+    for i in list(range(1,n_roda+1)):
+        A=classificacao(ano_camp,1,i)
+        for j in list(range(0,ntimes-1)):
+            if A.iloc[j][0]==team:
+                posi=j+1
+                pont=A.iloc[j][1]
+                aprov=round(pont/(3*i)*100,2)
+                lista.append([posi,pont,aprov])
+                positions.append(posi)
+                if j+1==melhor_posi:
+                    cont_melhor+=1
+                if j+1==pior_posi:
+                    cont_pior+=1
+                if aprov>maxi:
+                    maxi=aprov
+                    roda_maxi=i
+                if aprov<mini:
+                    mini=aprov
+                    roda_mini=i
+                if j+1<melhor_posi:
+                    melhor_posi=j+1
+                    roda_meposi=i
+                    cont_melhor=1
+                if j+1>pior_posi:
+                    pior_posi=j+1
+                    roda_piposi=i
+                    cont_pior=1
+                if j+1<5:
+                    cont_g4+=1
+                elif j+1>16:
+                    cont_z4+=1
+                break
+         
+    indices=list(range(1,n_roda+1))
+    
+    df2=pandas.DataFrame(data=lista,index=indices, columns=['Posição','Pontos','%'])
+    df2.T
+    #print(df2)
+    print(f' \n{team} teve melhor aproveitamento na rodada {roda_maxi}, {maxi}, e aproveitamento mínimo na rodada {roda_mini}, {mini}.')
+    print(f'\nA melhor posição foi {melhor_posi}, na rodada {roda_meposi}, onde ficou por {cont_melhor} rodada(s).')
+    print(f'A pior posição foi {pior_posi} na rodada {roda_piposi} onde esteve em {cont_pior} rodada(s).')
+    print(f'\n{team} passou {cont_g4} rodada(s) no G4 e {cont_z4} rodada(s) no Z4.')
+    
+    aux=list(range(1,ntimes+1))
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib import gridspec
+    
+    plt.clf()
+    
+    plt.figure(figsize=(12, 6))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1.5, 2.5]) 
+    ax0 = plt.subplot(gs[0])
+    ax0.hist(positions, bins=aux, range=(1,ntimes+1))
+    plt.xticks(np.arange(1, 21, 1.0))
+    ax0.set_xlabel("Posições")
+    ax0.set_ylabel("Frequência")
+    
+    ax1 = plt.subplot(gs[1])
+    ax1.plot(indices, positions,'ko-',color=cortime(time))
+    plt.xticks(np.arange(1, 39, 1.0))
+    plt.yticks(np.arange(1, 21, 1.0))
+    plt.ylim(ntimes, 1)
+    plt.xlim(1,38)
+    ax1.set_xlabel("Rodada")
+    ax1.set_ylabel("Posição")
+   
+    X = np.linspace(1, 39, 1024)
+    Y = np.linspace(16.5, 16.5, 1024)
+    Z = np.linspace(4.5, 4.5, 1024)
+    ax1.plot(X, Y,'r')
+    ax1.plot(X, Z,'g')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    #f, axarr = plt.subplots(1, 2)
+     
+    #axarr[0].
+    #plt.title('')
+    
+    #fig = plt.gcf()
+    
+    #axarr[1].
+       
+    return df2
+#histplot(20,Resp(:,2))
