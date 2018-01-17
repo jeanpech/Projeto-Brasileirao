@@ -1,0 +1,31 @@
+# author: Jean Carlo Moraes
+# Este é um programa de apoio para as outras rotinas, ele tranforma o nome dos times como eles estão caracterizados no banco
+# dados num formato mais adequado para display. Ex.: nometime('gremio_rs')='Grêmio'
+
+#input (STRING):um time no formato: time_sigladoestado, e.g., gremio_rs, saopaulo_sp
+#output(STRING):com o nome de display do time, e.g., Grêmio, São Paulo
+
+def nometime(time):
+        time1=time.split('_')
+        if time1[0]=='atletico':
+            name_team='Atlético'+' '+time1[1].upper()
+        elif time1[0]=='gremio':
+            name_team='Grêmio'
+        elif time1[0]=='america':
+            name_team='América'+' '+time1[1].upper()
+        elif time1[0]=='vitoria':
+            name_team='Vitória'
+        elif time1[0]=='saopaulo':
+            name_team='São Paulo'
+        elif time1[0]=='pontepreta':
+            name_team='Ponte Preta'
+        elif time1[0]=='avai':
+            name_team='Avaí'
+        elif time1[0]=='gremioprudente':
+            name_team='Grêmio Prudente'
+        elif time1[0]=='saocaetano':
+            name_team='São Caetano'
+        else:
+            name_team=time1[0].title()
+        
+        return name_team
